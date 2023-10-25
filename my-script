@@ -1,0 +1,61 @@
+var MAX_TOTALS = 800;
+var TODAYS_SPEND = 0;
+
+function getDayofWeek() {
+    var today = new Date();
+    //Returns a number 0-6. Sunday is 0, Monday is 1, etc.
+    var dayOfWeek = today.getDay();
+    var time = today;
+
+    //Checks if it is a FRIDAY OR SUNDAY
+
+    if (dayOfWeek == 5 || dayOfWeek == 0)
+      this.MAX_TOTALS = this.MAX_TOTALS * 1.525;
+  
+  //Logger.log(dayOfWeek == 3);
+}
+function main() {
+    processTodaysSpend();
+    getDayofWeek();
+    processCampaignPause();
+    Logger.log(TODAYS_SPEND);
+    
+}
+function processTodaysSpend() {
+    //Get Ad Spend
+    TODAYS_SPEND += getTodaysCosts(AdsApp.campaigns().get());
+    //Get Video Spend
+    TODAYS_SPEND += getTodaysCosts(AdsApp.videoCampaigns().get());
+}
+function processCampaignPause() {
+    if (TODAYS_SPEND > MAX_TOTALS) {
+  
+        var adsSelector = AdsApp.campaigns()
+        .withCondition("LabelNames CONTAINS_NONE ['nopause']")
+        .get();
+      
+        var videoSelector = AdsApp.videoCampaigns()
+        .withCondition("LabelNames CONTAINS_NONE ['nopause']")
+        .get();
+  
+        //Pause Ads
+        pauseCampaigns(adsSelector);
+        //Pause Videos
+        pauseCampaigns(videoSelector);
+    }
+}
+function getTodaysCosts(selector) {
+    var totals = 0;
+    while(selector.hasNext()) {
+        var campaign = selector.next();
+        var stats = campaign.getStatsFor("TODAY");
+        totals += stats.getCost();
+    }
+      return totals;
+}
+function pauseCampaigns(selector) {
+    while(selector.hasNext()) {
+        var campaign = selector.next();
+        campaign.pause();
+    } 
+}
